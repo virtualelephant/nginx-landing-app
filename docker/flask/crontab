@@ -1,0 +1,1 @@
+*/15 * * * 1-5 python3 /app/update_graphs.py >> /var/log/cron/stock_update.log 2>&1
