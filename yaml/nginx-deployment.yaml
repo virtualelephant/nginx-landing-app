@@ -13,15 +13,30 @@ spec:
       labels:
         app: nginx
     spec:
-      containers:
-        - name: nginx
-          image: harbor.home.virtualelephant.com/ve-lab/nginx:latest
-          ports:
-            - containerPort: 80
-          volumeMounts:
-            - mountPath: /app/static
-              name: ve-landing-storage
       volumes:
         - name: ve-landing-storage
           persistentVolumeClaim:
             claimName: ve-landing-pvc
+      initContainers:
+        - name: init-static-files
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - cp -n /default-content/* /app/static/;
+          volumeMounts:
+            - name: ve-landing-storage
+              mountPath: /app/static
+            - name: default-files
+              mountPath: /default-content
+      containers:
+        - name: nginx
+          image: harbor.home.virtualelephant.com/ve-lab/nginx-landing:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: ve-landing-storage
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: default-files
+          configMap:
+            name: default-static-files
